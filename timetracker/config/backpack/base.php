@@ -114,7 +114,7 @@ return [
         App\Http\Middleware\CheckIfAdmin::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \Backpack\CRUD\app\Http\Middleware\AuthenticateSession::class,
-        // \Backpack\CRUD\app\Http\Middleware\UseBackpackAuthGuardInsteadOfDefaultAuthGuard::class,
+        \Backpack\CRUD\app\Http\Middleware\UseBackpackAuthGuardInsteadOfDefaultAuthGuard::class,
     ],
 
     // Alias for that middleware
@@ -133,8 +133,8 @@ return [
 
     // The guard that protects the Backpack admin panel.
     // If null, the config.auth.defaults.guard value will be used.
-    'guard' => 'backpack',
-
+    //'guard' => 'backpack',
+    'guard' => env('BACKPACK_AUTH_GUARD', 'web'),
     // The password reset configuration for Backpack.
     // If null, the config.auth.defaults.passwords value will be used.
     'passwords' => 'backpack',
@@ -189,6 +189,7 @@ return [
     | https://www.backpackforlaravel.com
     |
     */
+
 
     'token_username' => env('BACKPACK_TOKEN_USERNAME', false),
 ];

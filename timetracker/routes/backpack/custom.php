@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Admin\TimeTracker;
 // --------------------------
 // Custom Backpack Routes
 // --------------------------
@@ -13,9 +13,12 @@ Route::group([
     'middleware' => array_merge(
         (array) config('backpack.base.web_middleware', 'web'),
         (array) config('backpack.base.middleware_key', 'admin')
+       
     ),
     'namespace' => 'App\Http\Controllers\Admin',
 ], function () { // custom admin routes
+    Route::get('time-tracker', [TimeTracker::class, 'showMessage'])->name('view.timetracker');
+    Route::post('time-submit', [TimeTracker::class, 'savetime']);
 }); // this should be the absolute last line of this file
 
 /**
