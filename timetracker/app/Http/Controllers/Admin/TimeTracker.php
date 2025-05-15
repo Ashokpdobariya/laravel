@@ -11,17 +11,17 @@ class TimeTracker extends Controller
 {
     public function showMessage()
     {
-        $tasks = Task::all();
-        if(isset($tasks)){
-            
-            return view('admin.custom.view_tracker',["tasks"=>$tasks]);
-        }
-        //return view('admin.custom.view_tracker');// Create this view
+        
+        $daywisedata    = $this->getTimeTrackerData();
+        $dataeWiseTotal = $this->calcaluteDateWiseTime();
+        $weekWisetotal  = $this->calcaluteWeeklyWiseTime();
+        return view('admin.custom.view_tracker',["data"=>$daywisedata,"dataeWiseTotal"=>$dataeWiseTotal,"weekWisetotal"=>$weekWisetotal]);
+        
+       
     }
-
     public function savetime(Request $request)
     {
-        // handle logic here
+        
         $validatedData = $request->validate([
             'task' => 'required|string',
             'project_name' => 'required',
@@ -32,9 +32,24 @@ class TimeTracker extends Controller
         ]);
         $data = $request->all(); 
         if(isset($data)){
-            //$task = Task::create($data);
-            $tasks = Task::limit(10)->orderBy('created_at', 'asc')->get();
-
+                $task = Task::create($data);
+               if($task){
+                    $daywisedata = $this->getTimeTrackerData();
+                    $dataeWiseTotal = $this->calcaluteDateWiseTime();
+                    $weekWisetotal  = $this->calcaluteWeeklyWiseTime();
+                    return redirect()->route('view.timetracker')->with('data',$daywisedata);
+               }
+        }
+    }
+    public function calculte_time($start_time,$end_time){
+        $startTime = Carbon::createFromFormat('H:i:s', $start_time);
+        $endTime = Carbon::createFromFormat('H:i:s', $end_time);
+        $diff = $startTime->diff($endTime)->format('%H:%I');
+        return $diff;
+    }
+    public function getTimeTrackerData(){
+        $tasks = $this->getTaskData();
+        if(isset($tasks)){
             $monthlyData = [];
             $weeklydat = [];
             $daywisedata =[];
@@ -56,39 +71,58 @@ class TimeTracker extends Controller
                     'date'=> $value->date
                 ];
             };
-         
-            $date_Key =[];
-            $week_key =[];
-            foreach ($daywisedata as $week => $day ) {
-                
-                array_push($week_key, $week);
-                foreach($day as $date => $d){
-                    array_push($date_Key, $date);
-                }
-            };
-            
-            echo "<pre>";
-            echo print_r( $date_Key,true) ;
-            echo "<pre>";
-                echo print_r($week_key ,true);
-            
-
-
-        //    echo "<pre>";
-        //    echo print_r($daywisedata,true) ;
-            
-            // echo "<pre>";
-            // echo print_r($daywisedata,true) ;
-           //return view('admin.custom.view_tracker',["tasks"=>$daywisedata]);
-            return redirect()->route('view.timetracker')->with('taskdata',json_encode($daywisedata));
+        return $daywisedata;
         }
-       
-        //return redirect()->back()->with('success', 'Form submitted!');
     }
-    public function calculte_time($start_time,$end_time){
-        $startTime = Carbon::createFromFormat('H:i:s', $start_time);
-            $endTime = Carbon::createFromFormat('H:i:s', $end_time);
-            $diff = $startTime->diff($endTime)->format('%H:%I');
-            return $diff;
+    public function calcaluteDateWiseTime(){
+        $tasks = $this->getTaskData();
+        $groupedByDate = $tasks->groupBy('date');
+
+            $totalsByDate = [];
+
+            foreach ($groupedByDate as $date => $entries) {
+                $totalSeconds = 0;
+
+                foreach ($entries as $entry) {
+                    $timeParts = explode(':', $entry->total_time); // "02:00:00"
+                    $hours = (int) $timeParts[0];
+                    $minutes = (int) $timeParts[1];
+                    $seconds = (int) $timeParts[2];
+                    $totalSeconds += ($hours * 3600) + ($minutes * 60) + $seconds;
+                }
+                $dateformat = Carbon::parse($date);
+                $dateRange = $dateformat->format('D, M j');
+                $totalsByDate[$dateRange] = gmdate('H:i:s', $totalSeconds); // converts total seconds back to HH:MM:SS
+            }
+            return $totalsByDate;
+            //dd($totalsByDate);
+    }
+    public function calcaluteWeeklyWiseTime(){
+        $tasks = $this->getTaskData();
+        $weeklyTotals = [];
+
+        foreach ($tasks as $log) {
+            $date = Carbon::parse($log->date);
+            $startOfWeek = Carbon::now()->setISODate($date->year, $date->weekOfYear)->startOfWeek(); // Monday
+            $endOfWeek = $startOfWeek->copy()->endOfWeek(); // Sunday
+            $week = $startOfWeek->format('M d') . ' - ' . $endOfWeek->format('M d');
+            [$hours, $minutes, $seconds] = explode(':', $log->total_time);
+            $totalSeconds = ($hours * 3600) + ($minutes * 60) + $seconds;
+            if (!isset($weeklyTotals[$week])) {
+                $weeklyTotals[$week] = 0;
+            }
+            $weeklyTotals[$week] += $totalSeconds;
+        }
+        foreach ($weeklyTotals as $week => $seconds) {
+            $weeklyTotals[$week] = gmdate('H:i:s', $seconds);
+        }
+        return $weeklyTotals;
+        //dd($weeklyTotals); // or return/view as needed
+    }
+    public function getTaskData(){
+        $tasks =Task::limit(22)->orderBy('date', 'desc')->get();
+        if(isset($tasks)){
+            return $tasks;
+        }
     }
 }

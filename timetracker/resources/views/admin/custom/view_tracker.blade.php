@@ -61,31 +61,47 @@
             </div>
     </div>
     </form>
-    <!-- <div class="all-data-viewer mt-6" >
-        <div class ="inner-main " style ="background-color:#e4eaee" >
-            <p class ="ms-2">this week </p>
-            @foreach($tasks as $task)
-                <div class="d-flex bg-white mt-1 ms-1 p-2">
-                    <div class ="d-flex flex-fill w-70">
-                        <div class="ms-1 p-2  " style ="background-color:#e4eaee" >{{ $task->task }}</div>
-                        <div class=" p-2 ">{{ $task->project_name }}</div>
+    
+        <div class="all-data-viewer mt-6" >
+            <div class ="inner-main " style="background-color:#F2F6F5 !important;" >
+                @foreach($data as $week => $days)
+                    <div class = "d-flex justify-content-between mx-2 ">
+                        <div class ="ms-1 p-1 fw-bold">{{$week}}</div>
+                       
+                        <div class ="ms-1 p-1 fw-bold">{{$weekWisetotal[$week]}}</div>
                     </div>
-                    <div class="d-flex ">
-                        <div class=" p-2 flex-fill ">{{ $task->start_time }}</div>
-                        <div class=" p-2 flex-fill ">{{ $task->end_time }}</div>
-                        <div class=" p-2 flex-fill  ">{{ $task->date }}</div>
-                        <div class="p-2 flex-fill ">{{ $task->total_time }}</div>
-                        <div  class = " p-2 flex-fill  cursor-pointer">
-                            <img src="{{ asset('images/play.svg') }}" alt="Logo" class="img-fluid">
-                        </div>
-                        <div  class = "p-2 flex-fill  cursor-pointer">
-                            <img src="{{ asset('images/locked.svg') }}" alt="Logo" class="img-fluid">
-                        </div>
+                    <div class="d-flex flex-column bg-white mt-1 ms-1 p-2 w-100">
+                        @foreach($days as $date => $taskdata)
+                            <div class ="d-flex  w-100">
+                                <div class="ms-1 p-2 w-100 " style ="background-color:#e4eaee" >{{ $date }}
+                                    @foreach($taskdata as $task )
+                                        <div class ="d-flex bg-white p-1 mt-1 ">
+                                            <div class ="d-flex  w-70 flex-fill " style="background-color:#F2F6F5 !important;">
+                                                <div class="ms-1 p-2  " style ="background-color:#e4eaee">{{$task['task'] }}</div> 
+                                                <div class=" p-2 ">{{$task['project_name'] }}</div>
+                                            </div>
+                                            <div class="d-flex ">
+                                                <div class=" p-2 flex-fill ">{{$task['start_time'] }}</div>
+                                                <div class=" p-2 flex-fill ">{{$task['end_time'] }}</div>
+                                                <div class=" p-2 flex-fill ">{{$task['date'] }}</div>
+                                                <div class=" p-2 flex-fill ">{{$task['day_total_time'] }}</div>
+                                                <div  class = " p-2 flex-fill  cursor-pointer">
+                                                    <img src="{{ asset('images/play.svg') }}" alt="Logo" class="img-fluid">
+                                                </div>
+                                                <div  class = "p-2 flex-fill  cursor-pointer">
+                                                    <img src="{{ asset('images/locked.svg') }}" alt="Logo" class="img-fluid">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
         </div>
-    </div> -->
+
 </div>
 
 <script>
@@ -96,9 +112,9 @@
             total_time:null,
             data:null,
             h(){
-                console.log('called',this.taskdata);
-                this.data = `<?= $tasks?>`;
-                console.log('data',this.data)
+                //console.log('called',this.taskdata);
+               
+                //console.log('data',this.data)
 
             },
             calculateTimeDifference() {
