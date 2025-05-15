@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\TimeTracker;
+use App\Http\Controllers\Admin\SaveTimerDataAuto;
 // --------------------------
 // Custom Backpack Routes
 // --------------------------
@@ -19,6 +20,7 @@ Route::group([
 ], function () { // custom admin routes
     Route::get('time-tracker', [TimeTracker::class, 'showMessage'])->name('view.timetracker');
     Route::post('time-submit', [TimeTracker::class, 'savetime']);
+    Route::post('auto-save-timerdata', [SaveTimerDataAuto::class, 'saveTimerData'])->name('save.timerdata');
 }); // this should be the absolute last line of this file
 
 /**

@@ -30,14 +30,15 @@ class TimeTracker extends Controller
             'date' => 'required',
             
         ]);
-        $data = $request->all(); 
+        $data = $request->all();
+         $userId = auth()->id();
         if(isset($data)){
                 $task = Task::create($data);
                if($task){
                     $daywisedata = $this->getTimeTrackerData();
                     $dataeWiseTotal = $this->calcaluteDateWiseTime();
                     $weekWisetotal  = $this->calcaluteWeeklyWiseTime();
-                    return redirect()->route('view.timetracker')->with('data',$daywisedata);
+                    return redirect()->route('view.timetracker')->with('data',$daywisedata)->with("dataeWiseTotal",$dataeWiseTotal)->with("weekWisetotal",$weekWisetotal);
                }
         }
     }
