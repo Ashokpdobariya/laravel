@@ -21,21 +21,29 @@ class SaveTimerDataAuto extends Controller
                 $data = $request->all();
                 $task = Task::create($data);
                  return response()->json([
-                    'created'=>'ok'
+                    'success'=>true,
+                        'total_time'=>$task->total_time
                 ]);
             };
             if(isset($tasks)){
                    $task_id = $tasks->id;
                    $toaltimeinbackend = $tasks->total_time;
                    $total_time = $this->updateTotalTime($request->total_time,$tasks->total_time);
+
                     $update = Task::where('id',$task_id)->update([
                         'total_time' =>  $total_time
                     ]);
                     if(isset($update)){
                         return response()->json([
-                        'update'=>$total_time
+                        'success'=>true,
+                        'total_time'=>$tasks->total_time
                     ]);
                     }
+                    // return response()->json([
+                    //     'success'=>true,
+                    //     'total_time'=>$tasks->total_time
+
+                    // ]);
                 
             }
     }

@@ -53,7 +53,7 @@
                             <button type="submit" class="btn btn-primary ">Add</button>
                         </div>
                         <div class="p-2 d-flex flex-column ms-2">
-                            <div  class = " cursor-pointer " @click ="open_timer = true">
+                            <div  class = " cursor-pointer " @click ="open_timer = true;getTodaysdate()">
                                 <img src="{{ asset('images/clock-blue.svg') }}" alt="Logo" class="img-fluid">
                             </div>
                             <div class = "cursor-pointer">
@@ -90,7 +90,7 @@
                                                 <div class=" p-2 flex-fill ">{{$task['end_time'] }}</div>
                                                 <div class=" p-2 flex-fill ">{{$task['date'] }}</div>
                                                 <div class=" p-2 flex-fill ">{{$task['day_total_time'] }}</div>
-                                                <div  class = " p-2 flex-fill  cursor-pointer">
+                                                <div  class = " p-2 flex-fill  cursor-pointer" @click = "editTimerData(`{{$task['task']}}`,`{{$task['project_name']}}`,`{{$task['date']}}`)">
                                                     <img src="{{ asset('images/play.svg') }}" alt="Logo" class="img-fluid">
                                                 </div>
                                                 <div  class = "p-2 flex-fill  cursor-pointer">
@@ -106,7 +106,7 @@
                 @endforeach
             </div>
         </div>
-            <div x-show = "open_timer == true"
+            <div x-cloak x-show = "open_timer == true"
                 class = "timer_popup shadow-lg border bg-white position-fixed bottom-0 end-0  mb-6 me-6 min-vh-50 w-25 z-3  p-2" 
                 style ="min-height : 500px;background-color:#F2F6F5 !important;box-shadow: 2px 2px 8px rgba(0, 0, 0, 5) !important;"
             >
@@ -118,7 +118,7 @@
                     
                          <div class="p-1">
                             <p>Date</p>
-                            <input type="date" name="date" id="date" x-model= "date" class="form-control" value="{{ old('start_time') }}">
+                            <input type="date" name="date" id="date" x-model= "date" class="form-control" value="date">
                         </div>
                         
                         <div class="p-1 w-100 ">
@@ -134,9 +134,9 @@
                                 <option value="3">Option 3</option>
                             </select>
                         </div>
-                         <div class="p-1 ">
+                         <div class="p-1 fw-bold">
                             <p>Total Time</p>
-                            <input  x-model ="total_time" type="text" name="total_time" id="total_time" class="form-control" value="total_time">
+                            <input  readonly x-model ="total_time" type="text" name="total_time" id="total_time" class="form-control" value="total_time">
                         </div>
                     </div>
                     <div  class = "input d-flex flex-column mt-2 ">
@@ -156,8 +156,10 @@
                             Stop
                         </div>
                         <div @click = "startTimer()" 
+                        x-show = "timer_start == false"
                             class = "btn btn-primary mt-2 fw-bold" 
-                            :style="timer_start ? 'background-color: green; color:black' : '' ">
+                            :disabled ="timer_start == true"
+                            :style="timer_start == false ? 'background-color: green; color:black' : '' ">
                             Start Timer
                         </div>
                     </div>
@@ -179,12 +181,21 @@
             data:null,
             timeoutID:null,
             date:null,
+            savetimeaftertenminute:null,
             h(){
                 //console.log('called',this.taskdata);
                
                 //console.log('data',this.data)
 
             },
+            editTimerData(task,project_name,date){
+                console.log('id',task,project_name,date);
+                this.open_timer = true;
+                this.task = task;
+                this.project_name =project_name;
+                this.data = date;
+            }
+            ,
             calculateTimeDifference() {
                     const [startHour, startMinute] =this.start_time.split(':').map(Number);
                     const [endHour, endMinute] = this.end_time.split(':').map(Number);
@@ -199,51 +210,89 @@
 
                     this.total_time = diffHours + ":" + ((diffMinutes >= 0 && diffMinutes < 10 ) ? ('0' + diffMinutes) : diffMinutes);
             },
-            startTimer(){
+             startTimer(){
               
-                 if(this.total_time == null || this.date == null || this.project_name == null || this.task == null){
+                 if( this.date == null || this.project_name == null || this.task == null){
                     return;
                  }
                 this.timer_start = true;
                 this.timer_stop = false;
                 const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                this.timeoutID = setInterval(() => {
+                this.start_time = this.getCurrentTime();
+                console.log('start',this.start_time)
+                this.timeoutID = setInterval(async () => {
                        console.log("This runs after 2 seconds");
-                        fetch("{{ route('save.timerdata') }}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': token,
-                            'Accept': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            task: this.task,
-                            project_name:this.project_name,
-                            start_time:this.start_time,
-                            end_time:this.end_time,
-                            total_time: this.total_time,
-                            date:this.date
+                       this.end_time = this.getCurrentTime();
+                       console.log('end',this.end_time);
+                       //this.calculateTimeDifference();
+                       this.savetimeaftertenminute = this.calulateDiffTimeForlivetimer();
+                       var response = await fetch("{{ route('save.timerdata') }}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': token,
+                                    'Accept': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    task: this.task,
+                                    project_name:this.project_name,
+                                    start_time:this.start_time,
+                                    end_time:this.end_time,
+                                    total_time: this.savetimeaftertenminute,
+                                    date:this.date
 
-                        }),
-                        })
-                        .then(response => {
-                            if(response.ok){
-                               return response.json()
-                            }
-                        })
-                        .then(data => {
-                        console.log('Response:', data);
-                        })
-                        .catch(error => {
-                        console.error('Error:', error);
-                            });
-                }, 5000);
+                                }),
+                                });
+                                var data = await response.json();
+                                if(data.success){
+                                    this.start_time = this.getCurrentTime();
+                                    this.total_time = data.total_time;
+                                }
+                        
+                        
+                }, 60000);
             },
             stopTimer(){
-                 clearInterval(this.timeoutID);
+                this.start_time = null;
+                this.end_time = null;
+                clearInterval(this.timeoutID);
                 this.timer_start = false;
                 this.timer_stop = true;
                
+            },
+            getCurrentTime(){
+                    const now = new Date();
+                   
+
+                    const hours = now.getHours().toString().padStart(2, '0');
+                    const minutes = now.getMinutes().toString().padStart(2, '0');
+                    const seconds = now.getSeconds().toString().padStart(2, '0');
+                    const currentTime = `${hours}:${minutes}:${seconds}`;
+                    return currentTime;
+            },
+            getTodaysdate(){
+                
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based
+                    const day = now.getDate().toString().padStart(2, '0');
+                    const formattedDate = `${year}-${month}-${day}`;
+                    this.date = formattedDate;
+                    
+            },
+            calulateDiffTimeForlivetimer(){
+                const [startHour, startMinute] =this.start_time.split(':').map(Number);
+                    const [endHour, endMinute] = this.end_time.split(':').map(Number);
+
+                    const startDate = new Date(0, 0, 0, startHour, startMinute);
+                    const endDate = new Date(0, 0, 0, endHour, endMinute);
+
+                    let diff = endDate - startDate;
+
+                    const diffHours = Math.floor(diff / (1000 * 60 * 60));
+                    const diffMinutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+                    return diffHours + ":" + ((diffMinutes >= 0 && diffMinutes < 10 ) ? ('0' + diffMinutes) : diffMinutes);
             }
         }
     }
