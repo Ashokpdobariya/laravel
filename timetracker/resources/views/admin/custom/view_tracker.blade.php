@@ -141,7 +141,7 @@
                     </div>
                     <div  class = "input d-flex flex-column mt-2 ">
                         <div
-                             @click = "open_timer = false;timer_start = false;timer_stop = false" 
+                             @click = "closeTimer()" 
                              class = "btn btn-primary mt-2 fw-bold"
                              :style=" timer_start || timer_stop ? 'background-color: #ffc107;color:black' : '' "
                              x-show =" !timer_start || timer_stop " 
@@ -193,7 +193,7 @@
                 this.open_timer = true;
                 this.task = task;
                 this.project_name =project_name;
-                this.data = date;
+                this.date = date;
             }
             ,
             calculateTimeDifference() {
@@ -259,6 +259,14 @@
                 this.timer_start = false;
                 this.timer_stop = true;
                
+            },
+            closeTimer(){
+                 this.task = null;
+                this.project_name = null;
+                this.date = null;
+                this.open_timer = false;
+                this.timer_start = false;
+                this.timer_stop = false
             },
             getCurrentTime(){
                     const now = new Date();

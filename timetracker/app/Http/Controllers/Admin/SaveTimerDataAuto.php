@@ -12,10 +12,11 @@ class SaveTimerDataAuto extends Controller
     public function saveTimerData(Request $request){
         $userId = auth()->id();
         //if(!$userId) return;
+        $todayDate = $request ->date ? $request ->date :Carbon::today();
         $tasks = Task::where('task',$request->task)
             ->where('project_name',$request->project_name)
             //->where('user',$userId)
-            ->whereDate('date', Carbon::today())
+            ->whereDate('date', $todayDate)
             ->first();
             if(!isset($tasks)){
                 $data = $request->all();
@@ -37,13 +38,9 @@ class SaveTimerDataAuto extends Controller
                         return response()->json([
                         'success'=>true,
                         'total_time'=>$tasks->total_time
-                    ]);
+                        ]);
                     }
-                    // return response()->json([
-                    //     'success'=>true,
-                    //     'total_time'=>$tasks->total_time
-
-                    // ]);
+                    
                 
             }
     }
