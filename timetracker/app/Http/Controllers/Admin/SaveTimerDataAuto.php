@@ -32,7 +32,8 @@ class SaveTimerDataAuto extends Controller
                    $total_time = $this->updateTotalTime($request->total_time,$tasks->total_time);
 
                     $update = Task::where('id',$task_id)->update([
-                        'total_time' =>  $total_time
+                        'total_time' =>  $total_time,
+                        'end_time' => $request->end_time
                     ]);
                     if(isset($update)){
                         return response()->json([
@@ -40,20 +41,13 @@ class SaveTimerDataAuto extends Controller
                         'total_time'=>$tasks->total_time
                         ]);
                     }
-                    
-                
             }
     }
     public function updateTotalTime($time1,$time2){
-        
- $base = Carbon::createFromTimeString('00:00:00');
-
-    $sec1 = $base->diffInSeconds(Carbon::createFromTimeString($time1));
-    $sec2 = $base->diffInSeconds(Carbon::createFromTimeString($time2));
-
-    $totalSeconds = $sec1 + $sec2;
-
-    return gmdate('H:i:s', $totalSeconds);
-
+        $base = Carbon::createFromTimeString('00:00:00');
+        $sec1 = $base->diffInSeconds(Carbon::createFromTimeString($time1));
+        $sec2 = $base->diffInSeconds(Carbon::createFromTimeString($time2));
+        $totalSeconds = $sec1 + $sec2;
+        return gmdate('H:i:s', $totalSeconds);
     }
 }

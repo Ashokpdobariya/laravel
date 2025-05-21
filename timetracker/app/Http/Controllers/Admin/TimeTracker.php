@@ -6,9 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Task;
 use Carbon\Carbon;
+use App\Http\Controllers\Admin\Pagination;
 
 class TimeTracker extends Controller
 {
+    protected $pagination;
+      public function __construct(Pagination $pagination)
+    {
+        $this->pagination = $pagination;
+    }
+   
     public function showMessage()
     {
         
@@ -80,10 +87,10 @@ class TimeTracker extends Controller
         $groupedByDate = $tasks->groupBy('date');
 
             $totalsByDate = [];
-
+            
             foreach ($groupedByDate as $date => $entries) {
+            
                 $totalSeconds = 0;
-
                 foreach ($entries as $entry) {
                     $timeParts = explode(':', $entry->total_time); // "02:00:00"
                     $hours = (int) $timeParts[0];
@@ -91,12 +98,14 @@ class TimeTracker extends Controller
                     $seconds = (int) $timeParts[2];
                     $totalSeconds += ($hours * 3600) + ($minutes * 60) + $seconds;
                 }
+                $formatted = $this->formatSecond($totalSeconds);//convert seconds to HH:MM:SS
                 $dateformat = Carbon::parse($date);
                 $dateRange = $dateformat->format('D, M j');
-                $totalsByDate[$dateRange] = gmdate('H:i:s', $totalSeconds); // converts total seconds back to HH:MM:SS
+                $totalsByDate[$dateRange] = $formatted; // converts total seconds back to HH:MM:SS
             }
-            return $totalsByDate;
             //dd($totalsByDate);
+            return $totalsByDate;
+            
     }
     public function calcaluteWeeklyWiseTime(){
         $tasks = $this->getTaskData();
@@ -115,15 +124,26 @@ class TimeTracker extends Controller
             $weeklyTotals[$week] += $totalSeconds;
         }
         foreach ($weeklyTotals as $week => $seconds) {
-            $weeklyTotals[$week] = gmdate('H:i:s', $seconds);
+                $formatted = $this->formatSecond($seconds);//convert seconds to HH:MM:SS
+                $weeklyTotals[$week] = $formatted;
         }
+          //dd($weeklyTotals); // or return/view as needed
         return $weeklyTotals;
-        //dd($weeklyTotals); // or return/view as needed
+      
     }
     public function getTaskData(){
-        $tasks =Task::limit(22)->orderBy('date', 'desc')->get();
+        $count = $this->pagination->listPerPage;
+        $tasks =Task::limit($count)->orderBy('date', 'desc')->get();
         if(isset($tasks)){
             return $tasks;
         }
     }
+    public function formatSecond($seconds){
+                $hours = floor($seconds / 3600);
+                $minutes = floor(($seconds % 3600) / 60);
+                $remainingSeconds = $seconds % 60;
+                $formatted = sprintf('%02d:%02d:%02d', $hours, $minutes, $remainingSeconds);
+                return  $formatted;
+    }
+
 }

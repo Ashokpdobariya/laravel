@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\TimeTracker;
 use App\Http\Controllers\Admin\SaveTimerDataAuto;
+use App\Http\Controllers\Admin\Pagination;
 // --------------------------
 // Custom Backpack Routes
 // --------------------------
@@ -21,6 +22,7 @@ Route::group([
     Route::get('time-tracker', [TimeTracker::class, 'showMessage'])->name('view.timetracker');
     Route::post('time-submit', [TimeTracker::class, 'savetime']);
     Route::post('auto-save-timerdata', [SaveTimerDataAuto::class, 'saveTimerData'])->name('save.timerdata');
+    Route::get('set-page', [Pagination::class, 'setListPerPage'])->name('set.pegination');
 }); // this should be the absolute last line of this file
 
 /**

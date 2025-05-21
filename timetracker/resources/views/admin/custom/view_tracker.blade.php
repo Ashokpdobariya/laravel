@@ -118,7 +118,7 @@
                     
                          <div class="p-1">
                             <p>Date</p>
-                            <input type="date" name="date" id="date" x-model= "date" class="form-control" value="date">
+                            <input type="date" name="date" id="date" x-model= "date" class="form-control" value="date" />
                         </div>
                         
                         <div class="p-1 w-100 ">
@@ -166,7 +166,23 @@
                 </div>
             </div>
 </div>
+<!-- pagination -->
+ 
 
+ <div x-data = "pagination({{ \App\Http\Controllers\Admin\Pagination::setListPerPage() }})" x-init ="calculatePage()" class ="pagination-main mt-6 ms-4 border p-4 me-4">
+    
+    <!-- <p x-text ="totalRaw"></p> -->
+     <div class="d-flex justify-content-center">
+        <div class ="border ms-1 "><button @click ="goToPrevPage()" class = "bg-info" >Prev</button></div>
+    <template x-for="page_num in countfullPage" :key="page_num">
+        <div class ="border ms-1" >
+            <button @click = "gotoPageNo(page_num)" x-text="page_num"  :class ="{'bg-primary text-white': currentPage == page_num}"></button>
+        </div>
+    </template>
+     <div class ="border ms-1 "><button @click = "goToNextPage()" class = "bg-info" >Next</button></div>
+</div>
+</div>
+ <!-- end-->
 <script>
     function TimetrackerFun(){
         return {
@@ -183,7 +199,7 @@
             date:null,
             savetimeaftertenminute:null,
             h(){
-                //console.log('called',this.taskdata);
+                console.log('called');
                
                 //console.log('data',this.data)
 
@@ -250,7 +266,7 @@
                                 }
                         
                         
-                }, 60000);
+                }, 600000);
             },
             stopTimer(){
                 this.start_time = null;
@@ -261,12 +277,15 @@
                
             },
             closeTimer(){
-                 this.task = null;
+                this.task = null;
                 this.project_name = null;
                 this.date = null;
+                this.total_time = null;
+                this.savetimeaftertenminute = null;
                 this.open_timer = false;
                 this.timer_start = false;
-                this.timer_stop = false
+                this.timer_stop = false;
+               
             },
             getCurrentTime(){
                     const now = new Date();
@@ -302,6 +321,38 @@
 
                     return diffHours + ":" + ((diffMinutes >= 0 && diffMinutes < 10 ) ? ('0' + diffMinutes) : diffMinutes);
             }
+        }
+    }
+    function pagination(a){
+        return {
+            totalRaw:a,
+            rawperPage:10,
+            countfullPage:null,
+            countRawOnLastPage:null,
+            startingRawOnpage:null,
+            endingRawOnPage:null,
+            currentPage:1,
+            calculatePage(){
+                this.countfullPage = Math.floor(this.totalRaw / this.rawperPage)+1;
+                this.countRawOnLastPage = (this.totalRaw % this.rawperPage);
+                console.log(this.countfullPage,this.countRawOnLastPage)
+            },
+            gotoPageNo(num){
+                this.startingRawOnpage = ((num-1) * this.rawperPage) +1;
+                this.endingRawOnPage = (num ==this.countfullPage) ? (this.startingRawOnpage + ( this.countRawOnLastPage-1) ):this.startingRawOnpage + (this.rawperPage -1)
+                this.currentPage = num;
+                console.log(num,this.startingRawOnpage,this.endingRawOnPage);
+            },
+            goToPrevPage(){
+               this.currentPage  ==1 ? this.gotoPageNo(1) : this.gotoPageNo(this.currentPage -1);
+               
+            },
+            goToNextPage(){
+                this.currentPage  == this.countfullPage ? this.gotoPageNo(this.countfullPage) : this.gotoPageNo(this.currentPage + 1);
+                
+            }
+
+
         }
     }
     </script>
