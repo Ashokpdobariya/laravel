@@ -11,18 +11,23 @@ use App\Http\Controllers\Admin\Pagination;
 class TimeTracker extends Controller
 {
     protected $pagination;
+    public $page ;
+    public $perPage;
       public function __construct(Pagination $pagination)
     {
         $this->pagination = $pagination;
+        $this->page =4;
+        $this->perPage =10;
     }
    
     public function showMessage()
     {
-        
-        $daywisedata    = $this->getTimeTrackerData();
-        $dataeWiseTotal = $this->calcaluteDateWiseTime();
-        $weekWisetotal  = $this->calcaluteWeeklyWiseTime();
-        return view('admin.custom.view_tracker',["data"=>$daywisedata,"dataeWiseTotal"=>$dataeWiseTotal,"weekWisetotal"=>$weekWisetotal]);
+        $this->page = floor($this->setListPerPage() / $this->perPage);
+        $daywisedata    = $this->getTimeTrackerData($perPage=10 ,$page=1);
+        $dataeWiseTotal = $this->calcaluteDateWiseTime($perPage=10 ,$page=1);
+        $weekWisetotal  = $this->calcaluteWeeklyWiseTime($perPage=10 ,$page=1);
+        $totalTaskRaw    = $this->setListPerPage();
+        return view('admin.custom.view_tracker',["data"=>$daywisedata,"dataeWiseTotal"=>$dataeWiseTotal,"weekWisetotal"=>$weekWisetotal,"totalRaw"=>$totalTaskRaw]);
         
        
     }
@@ -42,10 +47,11 @@ class TimeTracker extends Controller
         if(isset($data)){
                 $task = Task::create($data);
                if($task){
-                    $daywisedata = $this->getTimeTrackerData();
-                    $dataeWiseTotal = $this->calcaluteDateWiseTime();
-                    $weekWisetotal  = $this->calcaluteWeeklyWiseTime();
-                    return redirect()->route('view.timetracker')->with('data',$daywisedata)->with("dataeWiseTotal",$dataeWiseTotal)->with("weekWisetotal",$weekWisetotal);
+                    $daywisedata = $this->getTimeTrackerData($perPage=10 ,$page=1);
+                    $dataeWiseTotal = $this->calcaluteDateWiseTime($perPage=10 ,$page=1);
+                    $weekWisetotal  = $this->calcaluteWeeklyWiseTime($perPage=10 ,$page=1);
+                    $totalTaskRaw    = $this->setListPerPage();
+                    return redirect()->route('view.timetracker')->with('data',$daywisedata)->with("dataeWiseTotal",$dataeWiseTotal)->with("weekWisetotal",$weekWisetotal)->with("totalRaw",$totalTaskRaw);
                }
         }
     }
@@ -55,8 +61,8 @@ class TimeTracker extends Controller
         $diff = $startTime->diff($endTime)->format('%H:%I');
         return $diff;
     }
-    public function getTimeTrackerData(){
-        $tasks = $this->getTaskData();
+    public function getTimeTrackerData($perPage ,$page){
+        $tasks = $this->getTaskData($perPage,$page);
         if(isset($tasks)){
             $monthlyData = [];
             $weeklydat = [];
@@ -82,8 +88,8 @@ class TimeTracker extends Controller
         return $daywisedata;
         }
     }
-    public function calcaluteDateWiseTime(){
-        $tasks = $this->getTaskData();
+    public function calcaluteDateWiseTime($perPage ,$page){
+        $tasks = $this->getTaskData($perPage,$page);
         $groupedByDate = $tasks->groupBy('date');
 
             $totalsByDate = [];
@@ -107,8 +113,9 @@ class TimeTracker extends Controller
             return $totalsByDate;
             
     }
-    public function calcaluteWeeklyWiseTime(){
-        $tasks = $this->getTaskData();
+    public function calcaluteWeeklyWiseTime($perPage ,$page){
+        $tasks = $this->getTaskData($perPage,$page);
+        
         $weeklyTotals = [];
 
         foreach ($tasks as $log) {
@@ -131,9 +138,12 @@ class TimeTracker extends Controller
         return $weeklyTotals;
       
     }
-    public function getTaskData(){
-        $count = $this->pagination->listPerPage;
-        $tasks =Task::limit($count)->orderBy('date', 'desc')->get();
+    public function getTaskData($perPage ,$page){
+        //$count = $this->page;
+         $skip = ($page - 1) * $perPage;
+
+        $tasks = Task::skip($skip)->take($perPage)->orderBy('date', 'desc')->get();
+       // $tasks =Task::limit($count)->orderBy('date', 'desc')->get();
         if(isset($tasks)){
             return $tasks;
         }
@@ -145,5 +155,31 @@ class TimeTracker extends Controller
                 $formatted = sprintf('%02d:%02d:%02d', $hours, $minutes, $remainingSeconds);
                 return  $formatted;
     }
+    //for pagination 
+    public  function viewTaskList(Request $request){
+     
+      $totalpage = $request->currentPage;
+      $perPageList = $request->rawperPage;
+      $skip = ($totalpage - 1) * $perPageList;
 
+        //$tasks = Task::skip($skip)->take($perPageList)->orderBy('date', 'desc')->get();
+        $page = $totalpage;
+        $perPage = (int)($perPageList);
+    
+        $daywisedata    = $this->getTimeTrackerData($perPage ,$page);
+        $dataeWiseTotal = $this->calcaluteDateWiseTime($perPage ,$page);
+        $weekWisetotal  = $this->calcaluteWeeklyWiseTime($perPage ,$page);
+        $com = [
+                        'success'=>true,
+                        'pagination'=>$request->all(),
+                        'task'=>json_encode($daywisedata,true),
+                        'dateWiseTotal' =>json_encode($dataeWiseTotal,true),
+                        'weekWisetotal' =>json_encode($weekWisetotal,true)
+                       
+        ];
+      return response()->json($com);
+    }
+    public  function setListPerPage(){
+        return Task::count();
+ }
 }

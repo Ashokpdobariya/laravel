@@ -23,6 +23,8 @@ Route::group([
     Route::post('time-submit', [TimeTracker::class, 'savetime']);
     Route::post('auto-save-timerdata', [SaveTimerDataAuto::class, 'saveTimerData'])->name('save.timerdata');
     Route::get('set-page', [Pagination::class, 'setListPerPage'])->name('set.pegination');
+    // Route::POST('task-list-page', [Pagination::class, 'viewTaskList'])->name('task.list.page');
+    Route::POST('task-list-page', [TimeTracker::class, 'viewTaskList'])->name('task.list.page');
 }); // this should be the absolute last line of this file
 
 /**
