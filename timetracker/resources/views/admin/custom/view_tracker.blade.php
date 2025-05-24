@@ -597,15 +597,7 @@
  
     
 </div>
-<script>
-    window.onload = () => {
-        window.open(
-            "{{ url('/admin/time-tracker') }}",
-            "PopupWindow",
-            "width=800,height=600,toolbar=0,location=0"
-        );
-    };
-</script>
+
 
 <script>
         function TimetrackerFun1(){
