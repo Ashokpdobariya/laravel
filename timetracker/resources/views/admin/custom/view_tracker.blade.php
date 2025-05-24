@@ -19,6 +19,9 @@
     $jsonData = json_encode($data);
     $jsonWeekWiseTotal = json_encode($weekWisetotal);
     $jsonDateWiseTotal = json_encode($dataeWiseTotal);
+    $startOfWeek = \Carbon\Carbon::now()->startOfWeek()->format('M j'); // May 19
+    $endOfWeek = \Carbon\Carbon::now()->endOfWeek()->format('M j');  
+    $currentWeek = $startOfWeek.' - '.$endOfWeek;
 @endphp
 
 
@@ -458,7 +461,7 @@
                     <div class="mb-2">
                         <div class = "d-flex justify-content-between mx-2 mt-2 ">
                         <div class ="ms-1 p-1 fw-bold" x-text ="week"></div>
-                        <div class ="ms-1 p-1 fw-bold" x-text ="weekWisetotal[week]"></div>
+                        <div class ="ms-1 p-1 fw-bold" x-text ="'This week : '+ weekWisetotal[week]"></div>
                         </div>
                        
                         <div class="d-flex flex-column bg-white mt-1 ms-1 p-2 w-100">
@@ -468,7 +471,7 @@
                                         
                                         <div class="d-flex justify-content-between">
                                             <div class ="ms-1 p-1 fw-bold" x-text ="daywaisedate"></div>
-                                            <div class ="ms-1 p-1 fw-bold" x-text="dataeWiseTotal[daywaisedate]"></div>
+                                            <div class ="ms-1 p-1 fw-bold" x-text="'Total : '+ dataeWiseTotal[daywaisedate]"></div>
                                         </div>
                                         <template x-for="(task, ind) in taskdata" :key="ind">
                                             <div class ="d-flex bg-white p-1 mt-1 ">
@@ -481,8 +484,11 @@
                                                     <div class=" p-2 flex-fill " x-text ="task.end_time"></div>
                                                     <div class=" p-2 flex-fill " x-text ="task.date"></div>
                                                     <div class=" p-2 flex-fill " x-text ="task.day_total_time"></div>
-                                                    <div  class = " p-2 flex-fill  cursor-pointer" @click = "editTimerData(task.task,task.project_name,task.date)">
-                                                        <img src="{{ asset('images/play.svg') }}" alt="Logo" class="img-fluid">
+                                                    <div   class = " p-2 flex-fill  cursor-pointer"  @click = "editTimerData(task.task,task.project_name,task.date)">
+                                                        <button :id ="'bt_' + task.id" 
+                                                            style ="border:none;background:none" 
+                                                            :disabled ="currentweek != week">
+                                                            <img src="{{ asset('images/play.svg') }}" alt="Logo" class="img-fluid" /></button>
                                                     </div>
                                                     <div  class = "p-2 flex-fill  cursor-pointer">
                                                         <img src="{{ asset('images/locked.svg') }}" alt="Logo" class="img-fluid">
@@ -605,6 +611,7 @@
                 trackdata:<?= json_encode($data) ?>,
                 weekWisetotal:<?= json_encode($weekWisetotal) ?>,
                 dataeWiseTotal:<?= json_encode($dataeWiseTotal) ?>,
+                currentweek :`<?= $currentWeek?>`,
                 timer_task:null,
                 project_name :null,
                 start_time :null,
@@ -746,6 +753,7 @@
                 
                 this.countRawOnLastPage = (this.totalRaw % this.rawperPage);
                 this.token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
                 this.getViewTaskList();
             },
             gotoPageNo(num){
