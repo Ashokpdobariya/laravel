@@ -13,6 +13,7 @@
 @endif
 <head>
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.js" defer></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 
 @php
@@ -460,8 +461,8 @@
                 <template x-for="([week, days], index) in Object.entries(trackdata)" :key="index">
                     <div class="mb-2">
                         <div class = "d-flex justify-content-between mx-2 mt-2 ">
-                        <div class ="ms-1 p-1 fw-bold" x-text ="week"></div>
-                        <div class ="ms-1 p-1 fw-bold" x-text ="'This week : '+ weekWisetotal[week]"></div>
+                        <div class ="ms-1 p-1 fw-bold" x-text ="currentweek === week ? 'Last Week' : week"></div>
+                        <div class ="ms-1 p-1 fw-bold" x-text ="'Week Total : '+ weekWisetotal[week]"></div>
                         </div>
                        
                         <div class="d-flex flex-column bg-white mt-1 ms-1 p-2 w-100">
@@ -755,6 +756,9 @@
                 this.token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                 
                 this.getViewTaskList();
+                //this.takeScreenShot();
+
+                 
             },
             gotoPageNo(num){
                 this.startingRawOnpage = ((num-1) * this.rawperPage) +1;
@@ -802,6 +806,21 @@
                                        // console.log('date',data.dateWiseTotal)
                                      
                                 }
+                 },
+                 takeScreenShot(){
+                    html2canvas(document.body).then(canvas => {
+                    const imageData = canvas.toDataURL("image/png");
+
+                    fetch("{{ route('upload.screenshot') }}", {
+                        method: 'POST',
+                        headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': this.token
+                        },
+                        body: JSON.stringify({ image: imageData })
+                    }).then(res => res.json())
+                        .then(data => console.log('Taking a screenshot successfully'));
+                    });
                  }
             }
         }

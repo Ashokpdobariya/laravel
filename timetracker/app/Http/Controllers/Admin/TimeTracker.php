@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\Task;
 use Carbon\Carbon;
 use App\Http\Controllers\Admin\Pagination;
+use Illuminate\Support\Facades\Storage;
+
+
 
 class TimeTracker extends Controller
 {
@@ -27,6 +30,7 @@ class TimeTracker extends Controller
         $dataeWiseTotal = $this->calcaluteDateWiseTime($perPage=10 ,$page=1);
         $weekWisetotal  = $this->calcaluteWeeklyWiseTime($perPage=10 ,$page=1);
         $totalTaskRaw    = $this->setListPerPage();
+        
         return view('admin.custom.view_tracker',["data"=>$daywisedata,"dataeWiseTotal"=>$dataeWiseTotal,"weekWisetotal"=>$weekWisetotal,"totalRaw"=>$totalTaskRaw]);
         
        
@@ -181,5 +185,23 @@ class TimeTracker extends Controller
     }
     public  function setListPerPage(){
         return Task::count();
- }
+    }
+    public function uploadScreenShot(Request $request)
+    {
+        
+        $image = $request->input('image');
+
+        if (!$image) {
+            return response()->json(['message' => 'No image provided'], 400);
+        }
+
+        $image = str_replace('data:image/png;base64,', '', $image);
+        $image = str_replace(' ', '+', $image);
+        $imageData = base64_decode($image);
+
+        $filename = 'screenshot_' . time() . '.png';
+        Storage::disk('public')->put($filename, $imageData);
+
+        return response()->json(["message" => "Screenshot saved!", "file" => $filename]);
+    }
 }

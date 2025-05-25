@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\TimeTracker;
 use App\Http\Controllers\Admin\SaveTimerDataAuto;
 use App\Http\Controllers\Admin\Pagination;
+
 // --------------------------
 // Custom Backpack Routes
 // --------------------------
@@ -25,6 +26,7 @@ Route::group([
     Route::get('set-page', [Pagination::class, 'setListPerPage'])->name('set.pegination');
     // Route::POST('task-list-page', [Pagination::class, 'viewTaskList'])->name('task.list.page');
     Route::POST('task-list-page', [TimeTracker::class, 'viewTaskList'])->name('task.list.page');
+     Route::POST('upload-screenshot', [TimeTracker::class, 'uploadScreenShot'])->name('upload.screenshot');
 }); // this should be the absolute last line of this file
 
 /**
