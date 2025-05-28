@@ -21,6 +21,7 @@ class Task extends Model
         'end_time',
         'total_time',
         'date',
-        'user'
+        'user',
+        'time_interval'
     ];
 }

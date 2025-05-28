@@ -82,7 +82,8 @@ class TimeTracker extends Controller
                     'start_time' => $value->start_time,
                     'end_time' => $value->end_time,
                     'day_total_time' => $value->total_time,
-                    'date'=> $value->date
+                    'date'=> $value->date,
+                    'time_interval'=>json_encode($value->time_interval)
                 ];
             };
         return $daywisedata;

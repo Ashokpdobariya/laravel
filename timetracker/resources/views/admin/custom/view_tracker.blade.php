@@ -476,18 +476,32 @@
                                         <template x-for="(task, ind) in taskdata" :key="ind">
                                             <div class ="d-flex bg-white p-1 mt-1 ">
                                                 <div class ="d-flex  w-70 flex-fill " style="background-color:#F2F6F5 !important;">
+                                                     <div class=" p-2 " style ="width:50px !important" > 
+                                                        <template x-if = "timeinterval(task.time_interval).length > 1">
+                                                            <select name="time_interval1" id="time_interval1" x- class="form-control">
+                                                                <template x-for="(interval, index) in timeinterval(task.time_interval)" :key="index">
+                                                                    <option x-text="index == 0  ? timeinterval(task.time_interval).length -1 :interval" :value="interval"></option>
+                                                                </template>
+                                                                                    
+                                                            </select>
+                                                        </template>
+                                                    </div>
                                                     <div class="ms-1 p-2  " style ="background-color:#e4eaee" x-text ="task.task"></div> 
                                                     <div class=" p-2 " x-text ="task.project_name"></div>
                                                 </div>
                                                 <div class="d-flex ">
-                                                    <div class=" p-2 flex-fill " x-text ="task.start_time"></div>
-                                                    <div class=" p-2 flex-fill " x-text ="task.end_time"></div>
+                                                    <!-- if time data is saved using timedracker not menually than start time and end time not visble only timeinterval dropdown-->
+                                                    <div x-show ="timeIntervalLength ==1 " class=" p-2 flex-fill " x-text ="task.start_time"></div>
+                                                    <div x-show ="timeIntervalLength ==1 " class=" p-2 flex-fill " x-text ="task.end_time"></div>
+                                                    <!-- if time data is saved using timedracker not menually than start time and end time not visble only timeinterval dropdown-->
                                                     <div class=" p-2 flex-fill " x-text ="task.date"></div>
                                                     <div class=" p-2 flex-fill " x-text ="task.day_total_time"></div>
-                                                    <div   class = " p-2 flex-fill  cursor-pointer"  @click = "editTimerData(task.task,task.project_name,task.date)">
+                                                    <div   class = " p-2 flex-fill  d-block" >
                                                         <button :id ="'bt_' + task.id" 
+                                                         @click = "editTimerData(task.task,task.project_name,task.date)"
                                                             style ="border:none;background:none" 
-                                                            :disabled ="currentweek != week">
+                                                            class="cursor-pointer "
+                                                            :disabled ="currentweek == week">
                                                             <img src="{{ asset('images/play.svg') }}" alt="Logo" class="img-fluid" /></button>
                                                     </div>
                                                     <div  class = "p-2 flex-fill  cursor-pointer">
@@ -507,34 +521,34 @@
         </div>
     </div>
     <!-- pagination end-->
- <div  class ="pagination-main mt-6 ms-4   p-4 me-4">
-     <div class="d-flex justify-content-between shadow p-4 bg-transparent">
-        <div class =" ms-1 d-flex ">
-            <div class ="d-flex justify-content-center text-center ">
-                <input class = "" style="border: none;background: none;width: 110px" type="text" value ="Result Per Page :" readonly/>
-                <input x-model = "rawperPage" @blur = "currentPage=1;calculatePage();"  name ="rawperPage" class = "bg-info w-25 text-center" />
-            </div>
-        </div>
-        <div class ="ms-1 d-flex ">
-            <div class ="d-flex justify-content-center text-center">
-                <input class = "" style="border: none;background: none;width: 95px" type="text" value ="Current Page :" readonly/>
-                <input @change = "gotoPageNo($event.target.value)"  :value ="currentPage" name ="current_page" class = "bg-info w-25 text-center" />
-            </div>
-        </div>
-        
-        <div class ="page_wraper d-flex">
-            <div class =" ms-1"><button @click ="goToPrevPage()" class = "bg-info" >Prev</button></div>
-            <template x-for="page_num in countfullPage" :key="page_num">
-                <div class =" ms-1" >
-                    <button @click = "gotoPageNo(page_num)" x-text="page_num"  :class ="{'bg-primary text-white': currentPage == page_num}"></button>
+    <div  class ="pagination-main mt-6 ms-4   p-4 me-4">
+        <div class="d-flex justify-content-between shadow p-4 bg-transparent">
+            <div class =" ms-1 d-flex ">
+                <div class ="d-flex justify-content-center text-center ">
+                    <input class = "" style="border: none;background: none;width: 110px" type="text" value ="Result Per Page :" readonly/>
+                    <input x-model = "rawperPage" @blur = "currentPage=1;calculatePage();"  name ="rawperPage" class = "bg-info w-25 text-center" />
                 </div>
-            </template>
-            <div class =" ms-1 w-50">
-                <button @click = "goToNextPage()" class = "bg-info" >Next</button>
+            </div>
+            <div class ="ms-1 d-flex ">
+                <div class ="d-flex justify-content-center text-center">
+                    <input class = "" style="border: none;background: none;width: 95px" type="text" value ="Current Page :" readonly/>
+                    <input @change = "gotoPageNo($event.target.value)"  :value ="currentPage" name ="current_page" class = "bg-info w-25 text-center" />
+                </div>
+            </div>
+            
+            <div class ="page_wraper d-flex">
+                <div class =" ms-1"><button @click ="goToPrevPage()" class = "bg-info" >Prev</button></div>
+                <template x-for="page_num in countfullPage" :key="page_num">
+                    <div class =" ms-1" >
+                        <button @click = "gotoPageNo(page_num)" x-text="page_num"  :class ="{'bg-primary text-white': currentPage == page_num}"></button>
+                    </div>
+                </template>
+                <div class =" ms-1 w-50">
+                    <button @click = "goToNextPage()" class = "bg-info" >Next</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
  <!-- pagination end-->
     <!-- timer-->
      <div x-cloak x-show = "open_timer == true"
@@ -586,7 +600,7 @@
                             >
                             Stop
                         </div>
-                        <div @click = "startTimer()" 
+                        <div @click = "startTimer();" 
                         x-show = "timer_start == false"
                             class = "btn btn-primary mt-2 fw-bold" 
                             :disabled ="timer_start == true"
@@ -608,6 +622,7 @@
 <script>
         function TimetrackerFun1(){
             return {
+                timeIntervalLength:null , 
                 trackdata:<?= json_encode($data) ?>,
                 weekWisetotal:<?= json_encode($weekWisetotal) ?>,
                 dataeWiseTotal:<?= json_encode($dataeWiseTotal) ?>,
@@ -632,6 +647,13 @@
                 endingRawOnPage:null,
                 currentPage:1,
                 token:null,
+                timeInterval :null,
+                timeinterval(data){
+                    this.timeInterval = data.split(',');
+                    this.timeIntervalLength = this.timeInterval.length;
+                    
+                    return this.timeInterval[0] == null?[]:this.timeInterval;
+                },
                 editTimerData(task,project_name,date){
                     console.log('id',task,project_name,date);
                     this.open_timer = true;
@@ -658,6 +680,7 @@
                  if( this.date == null || this.project_name == null || this.timer_task == null){
                     return;
                  }
+                 
                 this.timer_start = true;
                 this.timer_stop = false;
                 const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -682,7 +705,8 @@
                                     start_time:this.start_time,
                                     end_time:this.end_time,
                                     total_time: this.savetimeaftertenminute,
-                                    date:this.date
+                                    date:this.date,
+                                    time_interval:''
 
                                 }),
                                 });
@@ -690,10 +714,11 @@
                                 if(data.success){
                                     this.start_time = this.getCurrentTime();
                                     this.total_time = data.total_time;
+                                   
                                 }
                         
                         
-                }, 600000);
+                }, 60000);//change the time after how much time timedata will be saved automatically
             },
             stopTimer(){
                 this.start_time = null;
@@ -753,8 +778,9 @@
                 
                 this.countRawOnLastPage = (this.totalRaw % this.rawperPage);
                 this.token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                
+             
                 this.getViewTaskList();
+                  
             },
             gotoPageNo(num){
                 this.startingRawOnpage = ((num-1) * this.rawperPage) +1;
@@ -795,9 +821,10 @@
                                 if(data.success){
                                     
                                      this.trackdata= JSON.parse(data.task);
+                                     //console.log('task',data.task)
                                     this.weekWisetotal= JSON.parse(data.weekWisetotal);
                                     this.dataeWiseTotal= JSON.parse(data.dateWiseTotal);
-                                    console.log('track f',data.pagination)
+                                    //console.log('track f',data.pagination)
                                       //console.log('wekk g',data.weekWisetotal)
                                        // console.log('date',data.dateWiseTotal)
                                      
