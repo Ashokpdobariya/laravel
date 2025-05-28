@@ -490,8 +490,10 @@
                                                     <div class=" p-2 " x-text ="task.project_name"></div>
                                                 </div>
                                                 <div class="d-flex ">
-                                                    <div class=" p-2 flex-fill " x-text ="task.start_time"></div>
-                                                    <div class=" p-2 flex-fill " x-text ="task.end_time"></div>
+                                                    <!-- if time data is saved using timedracker not menually than start time and end time not visble only timeinterval dropdown-->
+                                                    <div x-show ="timeIntervalLength ==1 " class=" p-2 flex-fill " x-text ="task.start_time"></div>
+                                                    <div x-show ="timeIntervalLength ==1 " class=" p-2 flex-fill " x-text ="task.end_time"></div>
+                                                    <!-- if time data is saved using timedracker not menually than start time and end time not visble only timeinterval dropdown-->
                                                     <div class=" p-2 flex-fill " x-text ="task.date"></div>
                                                     <div class=" p-2 flex-fill " x-text ="task.day_total_time"></div>
                                                     <div   class = " p-2 flex-fill  d-block" >
@@ -620,7 +622,7 @@
 <script>
         function TimetrackerFun1(){
             return {
-            intervals: ['16:14:09-16:14:12', '16:14:12-16:14:15', '16:14:15-16:14:18'], 
+                timeIntervalLength:null , 
                 trackdata:<?= json_encode($data) ?>,
                 weekWisetotal:<?= json_encode($weekWisetotal) ?>,
                 dataeWiseTotal:<?= json_encode($dataeWiseTotal) ?>,
@@ -648,6 +650,8 @@
                 timeInterval :null,
                 timeinterval(data){
                     this.timeInterval = data.split(',');
+                    this.timeIntervalLength = this.timeInterval.length;
+                    
                     return this.timeInterval[0] == null?[]:this.timeInterval;
                 },
                 editTimerData(task,project_name,date){
